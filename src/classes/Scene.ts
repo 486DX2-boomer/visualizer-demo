@@ -1,6 +1,7 @@
 // The scene should encapsulate all records in the scene and call their update behaviors
 
 import * as PixiJs from "pixi.js";
+import { Connection } from "./Connection"
 
 export class Scene {
   protected appReference: PixiJs.Application;
@@ -43,7 +44,15 @@ export class Scene {
     // Just a white sphere, radially blurred with alpha can do this.
 
     // initialize a Connection
+    const c: Connection = new Connection();
     // Connection is responsbile for calling the mock endpoint
+    const r: any[] = await c.fetchRecords();
+
+    // confirm we got the data
+    console.log("Records received in Scene:", r);
+    console.log("Number of records:", r.length);
+    console.log("First record sample:", r[0]);
+
     // Get all the Records from the Connection
     // Add them to a scene graph
     // Iterate over the graph at intervals to update their behavior and presentation
