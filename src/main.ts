@@ -6,7 +6,7 @@ import { Scene } from "./classes/Scene"
   const app = new PixiJs.Application();
 
   // Initialize the application
-  await app.init({ background: "#2c3335", resizeTo: window });
+  await app.init({ background: "#2c3335", resizeTo: window, antialias: true });
 
   // Append the application canvas to the document body
   document.getElementById("pixi-container")!.appendChild(app.canvas);
