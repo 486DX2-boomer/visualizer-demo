@@ -11,9 +11,7 @@ import { Scene } from "./classes/Scene"
   // Append the application canvas to the document body
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 
-  // If necessary, a scene switcher (class that provides different scene objects) can be used here to mount different scene
-
-  const scene = new Scene(app)
+  let scene = new Scene(app) // If declared with let, we can switch the scene later.
   await scene.load();
 
 })();

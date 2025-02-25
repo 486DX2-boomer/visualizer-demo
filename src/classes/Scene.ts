@@ -1,7 +1,15 @@
 // The scene should encapsulate all records in the scene and call their update behaviors
 
+// Scene can be made abstract/interface and then concrete scenes that implement it
+// can be written, and main.ts can switch scenes at will.
+// But this is a single-scene application, so I'm not doing that
+
 import * as PixiJs from "pixi.js";
-import { Connection } from "./Connection"
+import { Connection } from "./Connection";
+import { SceneGraph } from "./SceneGraph";
+import { BackgroundGradient } from "../actors/BackgroundGradient";
+import { CursorShadow } from "../actors/CursorShadow";
+import { BunnyExample } from "../actors/BunnyExample";
 
 export class Scene {
   protected appReference: PixiJs.Application;
@@ -11,43 +19,37 @@ export class Scene {
   }
 
   async load() {
-    // Load the bunny texture
-    const texture = await PixiJs.Assets.load("/assets/bunny.png");
-
-    // Create a bunny Sprite
-    const bunny = new PixiJs.Sprite(texture);
-
-    // Center the sprite's anchor point
-    bunny.anchor.set(0.5);
-
-    // Move the sprite to the center of the screen
-    bunny.position.set(
-      this.appReference.screen.width / 2,
-      this.appReference.screen.height / 2
-    );
-
-    // Add the bunny to the stage
-    this.appReference.stage.addChild(bunny);
-
-    // Listen for animate update
-    this.appReference.ticker.add((time) => {
-      // Just for fun, let's rotate mr rabbit a little.
-      // * Delta is 1 if running at 100% performance *
-      // * Creates frame-independent transformation *
-      bunny.rotation += 0.1 * time.deltaTime;
+    // Mouse position capture. Should be an object updated on the main loop?
+    // Many actors react to mouse position! this is important
+    let mousePosition = { x: 0, y: 0 };
+    this.appReference.stage.eventMode = "static"; // Enables event handling on this container
+    this.appReference.stage.hitArea = this.appReference.screen; // Defines where the container can receive events
+    this.appReference.stage.on("pointermove", (event) => {
+      // mousePosition = event.global.clone(); // this creates a new reference that breaks if anything else references it
+      mousePosition.x = event.global.x; // do this to maintain the reference
+      mousePosition.y = event.global.y;
     });
 
-    // The background should be a dark grey-medium gray gradient
-    // Or maybe blue? For more color?
+    // Need a scene graph object that manages all "actors"
+    const actors = new SceneGraph(this.appReference);
 
-    // The background should be "highlighted" behind the player's cursor position.
-    // Just a white sphere, radially blurred with alpha can do this.
+    // Actor setup
+    // Add bg
+    actors.addActor(new BackgroundGradient(this.appReference));
+    // Cursor shadow effect
+    actors.addActor(new CursorShadow(this.appReference, mousePosition));
+    // Spinning bunny example
+    let bunnyExample = new BunnyExample(this.appReference);
+    // bunnyExample loads a sprite, which is async. Because of that, we can't add it to actors straight away.
+    // Instead, we have to declare it first, call its async init, and then add it.
+    await bunnyExample.init(); // Comment out this line to see graceful error handling.
+    actors.addActor(bunnyExample);
 
+    // record loading logic - refactor this out to a method later
     // initialize a Connection
     const c: Connection = new Connection();
     // Connection is responsbile for calling the mock endpoint
     const r: any[] = await c.fetchRecords();
-
     // confirm we got the data
     console.log("Records received in Scene:", r);
     console.log("Number of records:", r.length);
@@ -57,39 +59,9 @@ export class Scene {
     // Add them to a scene graph
     // Iterate over the graph at intervals to update their behavior and presentation
 
-    interface cursorAtTextExample extends PixiJs.Text {
-        offsetX: number;
-        offsetY: number;
-    }
-    const text: cursorAtTextExample = new PixiJs.Text({
-        text: "hello world",
-        style: {
-          fontFamily: "monospace",
-          fontSize: 24,
-          fill: 0xffffff,
-          align: "left",
-        },
-        // declare these outside of the constructor to avoid linter complaint
-        // offsetX: -72,
-        // offsetY: -24
-      }) as cursorAtTextExample;
-
-      text.offsetX = -72,
-      text.offsetY = -24
-
-    let mousePosition = { x: 0, y: 0 };
-    this.appReference.stage.eventMode = "static"; // Enables event handling on this container
-    this.appReference.stage.hitArea = this.appReference.screen; // Defines where the container can receive events
-
-    this.appReference.stage.on("pointermove", (event) => {
-      mousePosition = event.global.clone(); // grabs the position on pointer move
-    });
-
+    // Initialize the scene graph update method
     this.appReference.ticker.add(() => {
-      // on update, sets the captured position
-      text.position.set(mousePosition.x + text.offsetX, mousePosition.y + text.offsetY);
+      actors.update();
     });
-
-    this.appReference.stage.addChild(text);
   }
 }
