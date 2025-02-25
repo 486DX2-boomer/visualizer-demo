@@ -32,8 +32,8 @@ export interface Account extends MockRecord {
   industry: string;
   numberOfEmployees: number;
   annualRevenue: number;
-  website?: string;
-  phone?: string;
+  website: string;
+  phone: string;
 }
 
 export interface Contact extends MockRecord {
@@ -41,8 +41,8 @@ export interface Contact extends MockRecord {
   firstName: string;
   lastName: string;
   email: string;
-  phone?: string;
-  title?: string;
+  phone: string;
+  title: string;
 }
 
 // interface Opportunity extends mockRecord {
@@ -51,6 +51,7 @@ export interface Contact extends MockRecord {
 
 // export unneeded here?
 export interface DrawableRecord extends MockRecord {
+    behaviors: any[]; // Array of functions
     onDraw: () => {};
     onUpdate: () => {};
     sprite?: PixiJs.Sprite;
