@@ -1,10 +1,11 @@
-// Record encapsulates the visual representation and the data retrieved from an endpoint
+// the visual representation and the data retrieved from an endpoint
 
 // Records are visually represented as "nodes" or shapes on the canvas with rays drawn to related records
 
-// Records should implement a mouseover behavior that displays a dialogue box that displays the record's fields
+// should implement a mouseover behavior that displays a dialogue box that displays the record's fields
 
 import * as PixiJs from "pixi.js";
+import { Actor } from "./Actor";
 
 export interface MockRecord {
   Id: string;
@@ -37,7 +38,7 @@ export interface Account extends MockRecord {
 }
 
 export interface Contact extends MockRecord {
-  accountId: string; // Relationship to Account
+  accountId: string; // Relationship field (to Account object)
   firstName: string;
   lastName: string;
   email: string;
@@ -50,10 +51,8 @@ export interface Contact extends MockRecord {
 // }
 
 // export unneeded here?
-export interface DrawableRecord extends MockRecord {
-    behaviors: any[]; // Array of functions
-    onDraw: () => {};
-    onUpdate: () => {};
+export interface RecordActor extends MockRecord, Actor {
     sprite?: PixiJs.Sprite;
     shape?: any; // if I decide to make the accounts circles, squares, etc
+    // relationship?: RecordRelationship; // Don't know how to implement the relationship drawing yet
 }
