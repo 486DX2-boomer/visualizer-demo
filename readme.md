@@ -6,6 +6,8 @@ This demo aims to provide "visualization" for mock data (In this case, fake Sale
 
 Renamed the "SceneGraph" class to "ActorCollection." Pixi's app.stage is already a scene graph, so ActorCollection makes it more explicit what the class does.
 
+Canvas doesn't resize on window resize. Might want to register an event that recalculates the scene on a window resize.
+
 ## Neat Ideas
 1. When the mouse moves close to a Record node, it will expand in size based on its proximity to the cursor. Then contract when the cursor moves away
 2. Record nodes will bob up and down or otherwise wiggle or something cool

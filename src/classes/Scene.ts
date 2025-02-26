@@ -29,9 +29,13 @@ export class Scene {
       mousePosition.x = event.global.x; // do this to maintain the reference
       mousePosition.y = event.global.y;
     });
-
-    // Need a scene graph object that manages all "actors"
+    
+    // Manage all actors
     const actors = new ActorCollection(this.appReference);
+    // Call update on all actors per scene update
+    this.appReference.ticker.add(() => {
+      actors.update();
+    });
 
     // Actor setup
     // Add bg
@@ -59,9 +63,5 @@ export class Scene {
     // Convert them to a drawable representation
     // Add them to the actor collection
 
-    // Initialize the scene graph update method
-    this.appReference.ticker.add(() => {
-      actors.update();
-    });
   }
 }
