@@ -10,16 +10,13 @@ export class BunnyExample implements Actor {
   }
 
   async init(): Promise<void> {
-    // Load the bunny texture
+    // example rotating sprite from the documentation
     const texture = await PixiJs.Assets.load("/assets/bunny.png");
 
-    // Create a bunny Sprite
     this.bunny = new PixiJs.Sprite(texture);
 
-    // Center the sprite's anchor point
     this.bunny.anchor.set(0.5);
 
-    // Move the sprite to the center of the screen
     this.bunny.position.set(
       this.appReference.screen.width / 2,
       this.appReference.screen.height / 2

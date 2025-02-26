@@ -1,8 +1,8 @@
-// Connection encapsulates retrieval from a database endpoint, which is mocked in this demo
+// represent retrieval from a database endpoint, which is mocked in this demo
 
-// The connection will need to provide Record objects to the scene graph in Scene
+// It should provide Record objects to the scene graph
 
-// We'll use Zod here to "validate" the data as it comes in
+// use Zod to "validate"
 
 // To simulate more async, maybe provide the records to the scene graph one by one instead of a single payload?
 
@@ -86,7 +86,6 @@ export class Connection {
         return;
       }
 
-      // already validated, safe to push now
       this.records.push(validationResult.data);
     });
   }
