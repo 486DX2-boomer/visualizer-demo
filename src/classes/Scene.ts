@@ -6,7 +6,7 @@
 
 import * as PixiJs from "pixi.js";
 import { Connection } from "./Connection";
-import { SceneGraph } from "./SceneGraph";
+import { ActorCollection } from "./ActorCollection";
 import { BackgroundGradient } from "../actors/BackgroundGradient";
 import { CursorShadow } from "../actors/CursorShadow";
 import { BunnyExample } from "../actors/BunnyExample";
@@ -31,7 +31,7 @@ export class Scene {
     });
 
     // Need a scene graph object that manages all "actors"
-    const actors = new SceneGraph(this.appReference);
+    const actors = new ActorCollection(this.appReference);
 
     // Actor setup
     // Add bg
@@ -56,8 +56,8 @@ export class Scene {
     console.log("First record sample:", r[0]);
 
     // Get all the Records from the Connection
-    // Add them to a scene graph
-    // Iterate over the graph at intervals to update their behavior and presentation
+    // Convert them to a drawable representation
+    // Add them to the actor collection
 
     // Initialize the scene graph update method
     this.appReference.ticker.add(() => {

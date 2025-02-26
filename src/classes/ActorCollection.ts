@@ -1,10 +1,10 @@
 // represents a collection of actors in a Scene
-// each actor must implement Actor interface (ie, an update method)
+// each actor implements Actor interface (ie, an update method)
 
 import { Actor } from "./Actor";
 import * as PixiJs from "pixi.js";
 
-export class SceneGraph {
+export class ActorCollection {
   actors: Actor[] = [];
   appReference: PixiJs.Application;
 

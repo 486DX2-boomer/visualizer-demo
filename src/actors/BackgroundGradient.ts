@@ -1,10 +1,6 @@
 import { Actor } from "../classes/Actor";
 import * as PixiJs from "pixi.js";
 
-// Background setup -- -- -- -- -- -- -- -- --
-
-// -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
 export class BackgroundGradient implements Actor {
   private color1 = 0x37bae0;
   private color2 = 0x096681;
