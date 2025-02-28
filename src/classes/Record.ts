@@ -64,6 +64,10 @@ abstract class RecordActor implements Actor {
   graphic: PixiJs.Graphics | undefined;
   protected recordData: MockRecord;
 
+  // Fix type annotation here
+  protected hitAreaOffset: number; // set it before setupInteractivity
+  protected hitAreaRadius: number;
+
   constructor(appReference: PixiJs.Application, recordData: MockRecord) {
     this.appReference = appReference;
 
@@ -73,24 +77,23 @@ abstract class RecordActor implements Actor {
     // the spread operator will also shallow copy the props, but I think .assign is more explicit
     // this.recordData = { ...recordData };
 
-    this.setupInteractivity();
+    // this.setupInteractivity();
   }
 
   // llm slop, write my own later ------------------
   protected setupInteractivity(): void {
     if (this.graphic) {
       // Enable interactivity
-      this.graphic.eventMode = "static";
+      this.graphic.eventMode = "dynamic";
 
       // Add a hitArea (area that responds to events)
       // Assuming your graphic is a rectangle/circle of some size
       // Adjust the size as needed based on your actual graphics
-      this.graphic.hitArea = new PixiJs.Rectangle(0, 0, 50, 50);
+      this.graphic.hitArea = new PixiJs.Rectangle(this.graphic.x - this.hitAreaOffset, this.graphic.y - 15, this.hitAreaRadius, this.hitAreaRadius);
 
       // Add pointer events
       this.graphic.on("pointerover", this.onPointerOver.bind(this));
       this.graphic.on("pointerout", this.onPointerOut.bind(this));
-
       // Optional: Add click event too
       this.graphic.on("pointerdown", this.onPointerDown.bind(this));
     }
@@ -98,13 +101,12 @@ abstract class RecordActor implements Actor {
 
   protected onPointerOver(): void {
     console.log(`Mouse over record: ${this.recordData.Id}`);
-    // Optionally change appearance on hover
-    this.graphic!.alpha = 0.8; // Slightly transparent
+    this.graphic!.scale = (1.2);
   }
 
   protected onPointerOut(): void {
     // Reset appearance
-    this.graphic!.alpha = 1;
+    this.graphic!.scale = (1.0);
   }
 
   protected onPointerDown(): void {
@@ -115,6 +117,7 @@ abstract class RecordActor implements Actor {
 
   addToStage() {
     this.configureGraphic();
+    this.setupInteractivity();
 
     if (!this.graphic) {
       // This shouldn't happen, but in case configureGraphic fails
@@ -135,17 +138,23 @@ abstract class RecordActor implements Actor {
 }
 
 export class AccountActor extends RecordActor {
+  // The super call is unnecessary- if the constructor is absent, parent constructor is called by defualt
   constructor(appReference: PixiJs.Application, recordData: any) {
     super(appReference, recordData);
   }
 
   configureGraphic() {
     // this.graphic = new PixiJs.Graphics();
-    this.graphic!.x = 10;
-    this.graphic!.y = 10;
+    // Would be nice to define all the properties in an object instead of inline
     // maybe you oughta stop throwing around non-null assertions willy nilly??
-    this.graphic!.ellipse(this.graphic!.x, this.graphic!.y, 10, 10);
-    this.graphic!.fill(0xc34288);
+    this.graphic!.ellipse(this.graphic!.x, this.graphic!.y, 20, 20);
+    this.graphic!.fill(0x55d6f5);
+
+    this.hitAreaOffset = 15;
+    this.hitAreaRadius = 30;
+
+    this.graphic!.pivot.x = 10;
+    this.graphic!.pivot.y = 10;
   }
 
   update() {
@@ -154,18 +163,38 @@ export class AccountActor extends RecordActor {
 }
 
 export class ContactActor extends RecordActor {
+  // The super call is unnecessary- if the constructor is absent, parent constructor is called by defualt
+
+  private sinMod: number = 0;
+
   constructor(appReference: PixiJs.Application, recordData: any) {
     super(appReference, recordData);
   }
   configureGraphic() {
     // this.graphic = new PixiJs.Graphics();
-    this.graphic!.x = 100;
-    this.graphic!.y = 100;
-    this.graphic!.rect(this.graphic!.x, this.graphic!.y, 12, 12);
-    this.graphic!.fill(0x7ba48a);
+    this.graphic!.rect(this.graphic!.x, this.graphic!.y, 20, 20);
+    this.graphic!.fill(0x6bf334);
+
+    this.hitAreaOffset = 0;
+    this.hitAreaRadius = 30;
+
+    this.graphic!.pivot.x = 10;
+    this.graphic!.pivot.y = 10;
   }
 
   update() {
+
+    // I'd like to refactor this animation (and other animations) into discrete components that can be attached at runtime
+
+    // Sin bobbing animation
+    this.sinMod += 0.01;
+    if (this.sinMod > Math.PI * 2) {
+      this.sinMod = 0;
+    }
+
+    const bobAmount = 0.07;
+    this.graphic!.position.y = this.graphic!.position.y + Math.sin(this.sinMod) * bobAmount;
+
     return;
   }
 }

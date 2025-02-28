@@ -76,7 +76,6 @@ function createRecordActors(
   response: any[],
   actors: ActorCollection
 ) {
-
   let xOffset = 0;
   let yOffset = 0;
 
@@ -84,15 +83,15 @@ function createRecordActors(
     switch (r.type) {
       case "Account":
         const a = new AccountActor(appReference, r);
-        xOffset += 22;
+        xOffset += 48;
         actors.addActor(a);
-        (a.graphic as PixiJs.Graphics).position.set(xOffset, 10)
+        (a.graphic as PixiJs.Graphics).position.set(xOffset, 40);
         break;
       case "Contact":
         const c = new ContactActor(appReference, r);
-        yOffset += -24;
+        yOffset += -48;
         actors.addActor(c);
-        (c.graphic as PixiJs.Graphics).position.set(0, -yOffset)
+        (c.graphic as PixiJs.Graphics).position.set(500, -yOffset);
         break;
     }
   }
