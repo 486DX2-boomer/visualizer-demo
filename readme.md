@@ -12,6 +12,14 @@ If records are loaded asynchronously, or we want the ability to fetch more recor
 
 Trying to figure out how to make a Record a data holder and a drawable object. In Record, I have two different interfaces for Accounts and Contacts. I could make a Drawable interface and try to compose them. Another idea I had was to create a concrete class that segregates the drawing properties and data properties into sub collections called Record.data amd Record.graphic. Or, I could make a new interface or class that represents drawing logic, have two instances of it (prototypes, actually) and assign it as a private member of Record, and then it's assigned at record initialization. I'm still undecided as to which one to attempt.
 
+OK, I've managed to get the records drawn as their shape representations. The code needs cleaned up bad. First, move the createRecordActors function in Scene to a factory class to manage the logic better. This will help implement asynchronous loading because the factory can stay initialized and listen as an observer to a hypothetical new record loading event from Connection.
+
+In Record.ts, the RecordActor class should be moved to its own file. It also needs cleaned up. The logic for interactivity is a bunch of long methods that are LLM slop and I think I can cut them down to a shorter more readable size and consolidate them into a single method for convenience.
+
+Mouse over events are working. The records will log their data to the console when moused over. This will be changed to showing an abbreviated tooltip (their id and name) and then a click will bring up the full window. Also, when mousing over, the line drawn to related records should glow or pulsate.
+
+There's a bug with the contact records where the mouse over detection collision is not in the same position as their drawn shape on the screen. It's offset to the left for some reason. No idea why yet.
+
 ## Neat Ideas
 1. When the mouse moves close to a Record node, it will expand in size based on its proximity to the cursor. Then contract when the cursor moves away
 2. Record nodes will bob up and down or otherwise wiggle or something cool

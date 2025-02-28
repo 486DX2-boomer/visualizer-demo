@@ -11,6 +11,8 @@ import { BackgroundGradient } from "../actors/BackgroundGradient";
 import { CursorShadow } from "../actors/CursorShadow";
 import { BunnyExample } from "../actors/BunnyExample";
 
+import { ContactActor, AccountActor, MockRecord } from "./Record";
+
 export class Scene {
   protected appReference: PixiJs.Application;
 
@@ -29,7 +31,7 @@ export class Scene {
       mousePosition.x = event.global.x; // do this to maintain the reference
       mousePosition.y = event.global.y;
     });
-    
+
     // Manage all actors
     const actors = new ActorCollection(this.appReference);
     // Call update on all actors per scene update
@@ -51,9 +53,9 @@ export class Scene {
 
     // record loading logic - refactor this out to a method later
     // initialize a Connection
-    const c: Connection = new Connection();
+    const con: Connection = new Connection();
     // Connection is responsbile for calling the mock endpoint
-    const r: any[] = await c.fetchRecords();
+    const r: any[] = await con.fetchRecords();
     // confirm we got the data
     console.log("Records received in Scene:", r);
     console.log("Number of records:", r.length);
@@ -63,5 +65,35 @@ export class Scene {
     // Convert them to a drawable representation
     // Add them to the actor collection
 
+    createRecordActors(this.appReference, r, actors);
+  }
+}
+
+// SERIOUSLY clean this up later. make a factory class that accepts a JSON response
+// This is just to show how RecordActors can get drawn to the scene
+function createRecordActors(
+  appReference: PixiJs.Application,
+  response: any[],
+  actors: ActorCollection
+) {
+
+  let xOffset = 0;
+  let yOffset = 0;
+
+  for (let r of response) {
+    switch (r.type) {
+      case "Account":
+        const a = new AccountActor(appReference, r);
+        xOffset += 22;
+        actors.addActor(a);
+        (a.graphic as PixiJs.Graphics).position.set(xOffset, 10)
+        break;
+      case "Contact":
+        const c = new ContactActor(appReference, r);
+        yOffset += -24;
+        actors.addActor(c);
+        (c.graphic as PixiJs.Graphics).position.set(0, -yOffset)
+        break;
+    }
   }
 }
