@@ -167,20 +167,23 @@ export class AccountActor extends RecordActor {
 }
 
 export class ContactActor extends RecordActor {
-  private sinMod: number = 0;
+  private sinMod: number;
   private glowFilter: PixiJs.ColorMatrixFilter | null = null;
   private pulseDirection: number = 1;
   private pulseValue: number = 0;
 
   constructor(appReference: PixiJs.Application, recordData: any) {
     super(appReference, recordData);
+
+    this.sinMod = Math.random() * 10; // Randomize starting value so that animations are not synchronized between actors of same type
+
   }
 
   configureGraphic() {
 
     this.graphic!.fill(0x6bf334);
-    this.graphic!.stroke({width: 2, color:0x4da828}); // Add border
-    this.graphic!.roundRect(0, 0, 24, 24, 3.2); // Slightly larger with rounded corners
+    this.graphic!.stroke({width: 2, color:0x4da828});
+    this.graphic!.roundRect(0, 0, 24, 24, 3.2);
     this.graphic!.endFill();
 
     // gradient effect
@@ -191,7 +194,7 @@ export class ContactActor extends RecordActor {
     gradientGraphic.tint = 0xffffff;
     gradientGraphic.alpha = 0.3;
 
-    // Add a mask to make it rounded like our base shape
+    // Add a mask to make it rounded like base shape
     const gradientMask = new PixiJs.Graphics();
     gradientMask.fill(0xffffff);
     gradientMask.roundRect(0, 0, 24, 24, 6);
@@ -219,7 +222,7 @@ export class ContactActor extends RecordActor {
     this.hitAreaRadius = 32;
 
     // mouse events
-    this.graphic!.eventMode = "static";
+    this.graphic!.eventMode = "static"; // enables mouse events
 
     this.graphic!.on("pointerover", () => {
       this.graphic!.scale.set(1.15, 1.15);
