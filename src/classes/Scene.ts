@@ -13,6 +13,8 @@ import { BunnyExample } from "../actors/BunnyExample";
 
 import { ContactActor, AccountActor, MockRecord } from "./Record";
 
+import { RecordActorFactory } from "./RecordActorFactory";
+
 export class Scene {
   protected appReference: PixiJs.Application;
 
@@ -59,40 +61,44 @@ export class Scene {
     // confirm we got the data
     console.log("Records received in Scene:", r);
     console.log("Number of records:", r.length);
-    console.log("First record sample:", r[0]);
+    console.log("First record is:", r[0]);
 
     // Get all the Records from the Connection
     // Convert them to a drawable representation
     // Add them to the actor collection
 
-    createRecordActors(this.appReference, r, actors);
+    // createRecordActors(this.appReference, r, actors);
+    // changed to use factory obj
+
+    const factory = new RecordActorFactory(this.appReference, actors);
+    factory.createRecordActors(r);
   }
 }
 
 // SERIOUSLY clean this up later. make a factory class that accepts a JSON response
 // This is just to show how RecordActors can get drawn to the scene
-function createRecordActors(
-  appReference: PixiJs.Application,
-  response: any[],
-  actors: ActorCollection
-) {
-  let xOffset = 0;
-  let yOffset = 0;
+// function createRecordActors(
+//   appReference: PixiJs.Application,
+//   response: any[],
+//   actors: ActorCollection
+// ) {
+//   let xOffset = 0;
+//   let yOffset = 0;
 
-  for (let r of response) {
-    switch (r.type) {
-      case "Account":
-        const a = new AccountActor(appReference, r);
-        xOffset += 48;
-        actors.addActor(a);
-        (a.graphic as PixiJs.Graphics).position.set(xOffset, 40);
-        break;
-      case "Contact":
-        const c = new ContactActor(appReference, r);
-        yOffset += -48;
-        actors.addActor(c);
-        (c.graphic as PixiJs.Graphics).position.set(500, -yOffset);
-        break;
-    }
-  }
-}
+//   for (let r of response) {
+//     switch (r.type) {
+//       case "Account":
+//         const a = new AccountActor(appReference, r);
+//         xOffset += 48;
+//         actors.addActor(a);
+//         (a.graphic as PixiJs.Graphics).position.set(xOffset, 40);
+//         break;
+//       case "Contact":
+//         const c = new ContactActor(appReference, r);
+//         yOffset += -48;
+//         actors.addActor(c);
+//         (c.graphic as PixiJs.Graphics).position.set(500, -yOffset);
+//         break;
+//     }
+//   }
+// }
