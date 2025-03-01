@@ -20,6 +20,10 @@ Mouse over events are working. The records will log their data to the console wh
 
 There's a bug with the contact records where the mouse over detection collision is not in the same position as their drawn shape on the screen. It's offset to the left for some reason. No idea why yet.
 
+There's no demonstration of async record loading yet. Should add a button that grabs more data and spawns more records just to show this is possible.
+
+Code has gotten very messy. Once basic functionality is in, need to do a full code quality pass to reduce length of methods, consolidate methods together, reorganize source files (RecordActor should be its own class in /actors, etc), refactor some naked functions into better constructed classes, remove unneeded comments, and write tests for everything.
+
 ## Neat Ideas
 1. When the mouse moves close to a Record node, it will expand in size based on its proximity to the cursor. Then contract when the cursor moves away
 2. Record nodes will bob up and down or otherwise wiggle or something cool
