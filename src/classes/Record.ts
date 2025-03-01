@@ -81,38 +81,43 @@ abstract class RecordActor implements Actor {
   }
 
   // llm slop, write my own later ------------------
+  //#region llmslop
   protected setupInteractivity(): void {
     if (this.graphic) {
       // Enable interactivity
       this.graphic.eventMode = "dynamic";
+      this.graphic!.cursor = "pointer";
 
-      // Add a hitArea (area that responds to events)
-      // Assuming your graphic is a rectangle/circle of some size
-      // Adjust the size as needed based on your actual graphics
-      this.graphic.hitArea = new PixiJs.Rectangle(this.graphic.x - this.hitAreaOffset, this.graphic.y - 15, this.hitAreaRadius, this.hitAreaRadius);
+      this.graphic.hitArea = new PixiJs.Rectangle(
+        this.graphic.x - this.hitAreaOffset,
+        this.graphic.y - 15,
+        this.hitAreaRadius,
+        this.hitAreaRadius
+      );
 
       // Add pointer events
       this.graphic.on("pointerover", this.onPointerOver.bind(this));
       this.graphic.on("pointerout", this.onPointerOut.bind(this));
-      // Optional: Add click event too
+      // on click
       this.graphic.on("pointerdown", this.onPointerDown.bind(this));
     }
   }
 
   protected onPointerOver(): void {
     console.log(`Mouse over record: ${this.recordData.Id}`);
-    this.graphic!.scale = (1.2);
+    this.graphic!.scale = 1.2;
   }
 
   protected onPointerOut(): void {
     // Reset appearance
-    this.graphic!.scale = (1.0);
+    this.graphic!.scale = 1.0;
   }
 
   protected onPointerDown(): void {
     console.log(`Clicked record: ${this.recordData.Id}`);
     console.log("Record details:", this.recordData);
   }
+  //#endregion
   // end llm slop ---------------------------------------
 
   addToStage() {
@@ -144,9 +149,8 @@ export class AccountActor extends RecordActor {
   }
 
   configureGraphic() {
-    // this.graphic = new PixiJs.Graphics();
     // Would be nice to define all the properties in an object instead of inline
-    // maybe you oughta stop throwing around non-null assertions willy nilly??
+    // maybe oughta stop throwing around non-null assertions willy nilly
     this.graphic!.ellipse(this.graphic!.x, this.graphic!.y, 20, 20);
     this.graphic!.fill(0x55d6f5);
 
@@ -163,38 +167,103 @@ export class AccountActor extends RecordActor {
 }
 
 export class ContactActor extends RecordActor {
-  // The super call is unnecessary- if the constructor is absent, parent constructor is called by defualt
-
   private sinMod: number = 0;
+  private glowFilter: PixiJs.ColorMatrixFilter | null = null;
+  private pulseDirection: number = 1;
+  private pulseValue: number = 0;
 
   constructor(appReference: PixiJs.Application, recordData: any) {
     super(appReference, recordData);
   }
+
   configureGraphic() {
-    // this.graphic = new PixiJs.Graphics();
-    this.graphic!.rect(this.graphic!.x, this.graphic!.y, 20, 20);
+
     this.graphic!.fill(0x6bf334);
+    this.graphic!.stroke({width: 2, color:0x4da828}); // Add border
+    this.graphic!.roundRect(0, 0, 24, 24, 3.2); // Slightly larger with rounded corners
+    this.graphic!.endFill();
 
+    // gradient effect
+    const gradientGraphic = new PixiJs.Sprite(PixiJs.Texture.WHITE);
+    gradientGraphic.width = 24;
+    gradientGraphic.height = 24;
+
+    gradientGraphic.tint = 0xffffff;
+    gradientGraphic.alpha = 0.3;
+
+    // Add a mask to make it rounded like our base shape
+    const gradientMask = new PixiJs.Graphics();
+    gradientMask.fill(0xffffff);
+    gradientMask.roundRect(0, 0, 24, 24, 6);
+    gradientMask.endFill();
+
+    gradientGraphic.mask = gradientMask;
+    this.graphic!.addChild(gradientMask);
+
+    gradientGraphic.height = 12; // cover top half
+
+    // glow fx
+    const blurFilter = new PixiJs.BlurFilter({strength: 0.2, quality: 1});
+    this.glowFilter = new PixiJs.ColorMatrixFilter();
+    this.glowFilter.brightness(1.2, false);
+
+    this.graphic!.filters = [blurFilter, this.glowFilter];
+    this.graphic!.addChild(gradientGraphic);
+
+    this.graphic!.pivot.x = 12;
+    this.graphic!.pivot.y = 12;
+
+    // rotation
+    this.graphic!.angle = Math.random() * 10 - 5;
     this.hitAreaOffset = 0;
-    this.hitAreaRadius = 30;
+    this.hitAreaRadius = 32;
 
-    this.graphic!.pivot.x = 10;
-    this.graphic!.pivot.y = 10;
+    // mouse events
+    this.graphic!.eventMode = "static";
+
+    this.graphic!.on("pointerover", () => {
+      this.graphic!.scale.set(1.15, 1.15);
+      if (this.glowFilter) {
+        this.glowFilter.brightness(1.5, false);
+      }
+    });
+
+    this.graphic!.on("pointerout", () => {
+      this.graphic!.scale.set(1, 1);
+      if (this.glowFilter) {
+        this.glowFilter.brightness(1.2, false);
+      }
+    });
   }
 
   update() {
-
-    // I'd like to refactor this animation (and other animations) into discrete components that can be attached at runtime
-
-    // Sin bobbing animation
-    this.sinMod += 0.01;
+    // Bobbing motion
+    this.sinMod += 0.05;
     if (this.sinMod > Math.PI * 2) {
       this.sinMod = 0;
     }
+    const bobAmount = 0.02;
+    const swayAmount = 0.01;
+    this.graphic!.position.y =
+      this.graphic!.position.y + Math.sin(this.sinMod) * bobAmount;
+    this.graphic!.position.x += Math.cos(this.sinMod * 0.7) * 0.2 * swayAmount;
 
-    const bobAmount = 0.07;
-    this.graphic!.position.y = this.graphic!.position.y + Math.sin(this.sinMod) * bobAmount;
+    // glow fx
+    if (this.glowFilter) {
+      this.pulseValue += 0.01 * this.pulseDirection;
 
-    return;
+      if (this.pulseValue >= 1) {
+        this.pulseDirection = -1;
+      } else if (this.pulseValue <= 0) {
+        this.pulseDirection = 1;
+      }
+
+      // brightness mod
+      const baseBrightness = 1.1;
+      const pulseAmount = 0.5;
+      this.glowFilter.brightness(
+        baseBrightness + this.pulseValue * pulseAmount, false
+      );
+    }
   }
 }
