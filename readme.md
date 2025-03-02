@@ -26,6 +26,10 @@ Code has gotten very messy. Once basic functionality is in, need to do a full co
 
 Add click + drag functionality to move records around and then figure out how to recalculate related record line-drawing behavior on each move (event).
 
+I'm starting to regret how I subclassed RecordActor into ContactActor, AccountActor etc. It adds more classes when instead, I could refactor this so that RecordActor (as it already does) has members .graphic and .data. .graphic can be cloned from a pre-defined prototype at instantiation. Then to make the behaviors different, add a member that is a "behaviors" array (ie, an array of functions) to iterate through in the update method. Then only RecordActor is required, without any subclassing, reducing the number of classes.
+
+I would like to add a Loading scene that shows an animation until all assets are loaded in the scene and ready to display, to prevent pop in on initialize.
+
 ## Neat Ideas
 1. When the mouse moves close to a Record node, it will expand in size based on its proximity to the cursor. Then contract when the cursor moves away
 2. Record nodes will bob up and down or otherwise wiggle or something cool
