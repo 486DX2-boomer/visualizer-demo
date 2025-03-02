@@ -6,7 +6,6 @@
 
 import * as PixiJs from "pixi.js";
 import { Actor } from "./Actor";
-import { record } from "zod";
 
 export interface MockRecord {
   Id: string;
