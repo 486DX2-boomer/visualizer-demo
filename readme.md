@@ -30,6 +30,10 @@ I'm starting to regret how I subclassed RecordActor into ContactActor, AccountAc
 
 I would like to add a Loading scene that shows an animation until all assets are loaded in the scene and ready to display, to prevent pop in on initialize.
 
+Click and drag is working, although it was a bitch to pass the global mouse position to the constructors of the record classes. A reference had to be passed from the scene, to the factory, to the factory method generic that creates the records, to the record constructors. Way too many references passed down the chain and I wish there's (and maybe there is) some way to globally access mouse position without having to pass a reference so many times.
+
+My plan next is to create a new collection of actors called "relationship lines" that will handle all the lines drawn between records as opposed to trying to encapsulate them within each Record class, the Record class is already a mess and trying to store references between them will create even more spaghetti.
+
 ## Neat Ideas
 1. When the mouse moves close to a Record node, it will expand in size based on its proximity to the cursor. Then contract when the cursor moves away
 2. Record nodes will bob up and down or otherwise wiggle or something cool

@@ -9,16 +9,20 @@ export class RecordActorFactory {
   private screenHeight: number;
   private padding: number = 50;
 
+  private globalMousePositionRef: { x: number; y: number };
+
   constructor(
     appReference: PixiJs.Application,
     actorCollection: ActorCollection,
-    padding: number = 50
+    padding: number = 50,
+    mousePos: { x: number; y: number }
   ) {
     this.app = appReference;
     this.actors = actorCollection;
     this.screenWidth = this.app.screen.width;
     this.screenHeight = this.app.screen.height;
     this.padding = padding;
+    this.globalMousePositionRef = mousePos;
   }
 
   private generateCoordField(
@@ -137,14 +141,18 @@ export class RecordActorFactory {
   }
 
   private createActors<T>(
-    ActorType: new (app: PixiJs.Application, data: any) => T,
+    ActorType: new (
+      app: PixiJs.Application,
+      data: any,
+      mousePos: {x: number, y: number}
+    ) => T,
     records: any[],
-    coords: Array<{ x: number; y: number }>
+    coords: Array<{ x: number; y: number }>,
   ): void {
     const count = Math.min(records.length, coords.length);
 
     for (let i = 0; i < count; i++) {
-      const actor = new ActorType(this.app, records[i]);
+      const actor = new ActorType(this.app, records[i], this.globalMousePositionRef);
       this.actors.addActor(actor as any);
       (actor as any).container.position.set(coords[i].x, coords[i].y);
     }

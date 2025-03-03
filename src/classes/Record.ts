@@ -63,11 +63,14 @@ abstract class RecordActor implements Actor {
   container: PixiJs.Container | undefined;
   protected recordData: MockRecord;
 
+  protected isDragging: boolean = false;
+  protected globalMousePositionRef: { x: number; y: number };
+
   // Fix type annotation here
   protected hitAreaOffset: number; // set it before setupInteractivity
   protected hitAreaRadius: number;
 
-  constructor(appReference: PixiJs.Application, recordData: MockRecord) {
+  constructor(appReference: PixiJs.Application, recordData: MockRecord, mousePos: {x: number, y: number}) {
     this.appReference = appReference;
 
     this.container = new PixiJs.Container();
@@ -75,6 +78,8 @@ abstract class RecordActor implements Actor {
     this.recordData = Object.assign({} as MockRecord, recordData);
     // the spread operator will also shallow copy the props, but I think .assign is more explicit
     // this.recordData = { ...recordData };
+
+    this.globalMousePositionRef = mousePos;
   }
 
   protected setupInteractivity(): void {
@@ -96,6 +101,8 @@ abstract class RecordActor implements Actor {
       this.container.on("pointerout", this.onPointerOut.bind(this));
       // on click
       this.container.on("pointerdown", this.onPointerDown.bind(this));
+
+      this.container.on("pointerup", this.onPointerUp.bind(this));
     }
   }
 
@@ -112,6 +119,21 @@ abstract class RecordActor implements Actor {
   protected onPointerDown(): void {
     console.log(`Clicked record: ${this.recordData.Id}`);
     console.log("Record details:", this.recordData);
+
+    // initialize drag
+    this.isDragging = true;
+  }
+
+  protected onPointerUp(): void {
+    // end drag
+    this.isDragging = false;
+  }
+
+  protected drag(): void {
+    if (this.isDragging) {
+      this.container!.x = this.globalMousePositionRef.x;
+      this.container!.y = this.globalMousePositionRef.y;
+    }
   }
 
   addToStage() {
@@ -141,9 +163,8 @@ export class AccountActor extends RecordActor {
   private sinMod: number;
 
   // The super call is unnecessary- if the constructor is absent, parent constructor is called by defualt
-  constructor(appReference: PixiJs.Application, recordData: any) {
-    super(appReference, recordData);
-
+  constructor(appReference: PixiJs.Application, recordData: any, mousePos: {x: number, y: number}) {
+    super(appReference, recordData, mousePos);
     this.sinMod = Math.random() * 10;
   }
 
@@ -186,6 +207,10 @@ export class AccountActor extends RecordActor {
       this.container!.position.y + Math.sin(this.sinMod) * bobAmount;
     this.container!.position.x +=
       Math.cos(this.sinMod * 0.7) * 0.2 * swayAmount;
+
+    // handle drag
+    this.drag();
+
     return;
   }
 }
@@ -196,10 +221,10 @@ export class ContactActor extends RecordActor {
   private pulseDirection: number = 1;
   private pulseValue: number = 0;
 
-  constructor(appReference: PixiJs.Application, recordData: any) {
-    super(appReference, recordData);
+  constructor(appReference: PixiJs.Application, recordData: any, mousePos: {x: number, y: number}) {
+    super(appReference, recordData, mousePos);
 
-    this.sinMod = Math.random() * 10; // Randomize starting value so that animations are not synchronized between actors of same type
+    this.sinMod = Math.random() * 10; // randomize starting value to prevent synced animation
   }
 
   configureGraphic() {
@@ -296,5 +321,8 @@ export class ContactActor extends RecordActor {
         false
       );
     }
+
+    // handle drag
+    this.drag();
   }
 }

@@ -25,7 +25,7 @@ export class Scene {
   async load() {
     // Mouse position capture. Should be an object updated on the main loop?
     // Many actors react to mouse position! this is important
-    let mousePosition = { x: 0, y: 0 };
+    const mousePosition = { x: 0, y: 0 };
     this.appReference.stage.eventMode = "static"; // enables event handling on this container
     this.appReference.stage.hitArea = this.appReference.screen; // Defines where the container can receive events
     this.appReference.stage.on("pointermove", (event) => {
@@ -70,7 +70,7 @@ export class Scene {
     // createRecordActors(this.appReference, r, actors);
     // changed to use factory obj
 
-    const factory = new RecordActorFactory(this.appReference, actors);
+    const factory = new RecordActorFactory(this.appReference, actors, 50, mousePosition);
     factory.createRecordActors(r);
   }
 }
