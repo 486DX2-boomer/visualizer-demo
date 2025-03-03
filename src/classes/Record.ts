@@ -60,7 +60,7 @@ export interface Contact extends MockRecord {
 // RecordActor separates the graphical representation and the data into different members
 abstract class RecordActor implements Actor {
   appReference: PixiJs.Application;
-  graphic: PixiJs.Graphics | undefined;
+  container: PixiJs.Container | undefined;
   protected recordData: MockRecord;
 
   // Fix type annotation here
@@ -70,66 +70,61 @@ abstract class RecordActor implements Actor {
   constructor(appReference: PixiJs.Application, recordData: MockRecord) {
     this.appReference = appReference;
 
-    this.graphic = new PixiJs.Graphics();
+    this.container = new PixiJs.Container();
 
     this.recordData = Object.assign({} as MockRecord, recordData);
     // the spread operator will also shallow copy the props, but I think .assign is more explicit
     // this.recordData = { ...recordData };
-
-    // this.setupInteractivity();
   }
 
-  // llm slop, write my own later ------------------
-  //#region llmslop
   protected setupInteractivity(): void {
-    if (this.graphic) {
+    if (this.container) {
       // Enable interactivity
-      this.graphic.eventMode = "dynamic";
-      this.graphic!.cursor = "pointer";
+      this.container.eventMode = "dynamic";
+      this.container.cursor = "pointer";
 
-      this.graphic.hitArea = new PixiJs.Rectangle(
-        this.graphic.x - this.hitAreaOffset,
-        this.graphic.y - 15,
+      this.container.hitArea = new PixiJs.Rectangle(
+        this.container.x - this.hitAreaOffset,
+        this.container.y - 15,
         this.hitAreaRadius,
         this.hitAreaRadius
       );
 
       // Add pointer events
-      this.graphic.on("pointerover", this.onPointerOver.bind(this));
-      this.graphic.on("pointerout", this.onPointerOut.bind(this));
+      // have to use .bind here? or could define the method inline with arrow
+      this.container.on("pointerover", this.onPointerOver.bind(this));
+      this.container.on("pointerout", this.onPointerOut.bind(this));
       // on click
-      this.graphic.on("pointerdown", this.onPointerDown.bind(this));
+      this.container.on("pointerdown", this.onPointerDown.bind(this));
     }
   }
 
   protected onPointerOver(): void {
     console.log(`Mouse over record: ${this.recordData.Id}`);
-    this.graphic!.scale = 1.2;
+    this.container!.scale = 1.2;
   }
 
   protected onPointerOut(): void {
     // Reset appearance
-    this.graphic!.scale = 1.0;
+    this.container!.scale = 1.0;
   }
 
   protected onPointerDown(): void {
     console.log(`Clicked record: ${this.recordData.Id}`);
     console.log("Record details:", this.recordData);
   }
-  //#endregion
-  // end llm slop ---------------------------------------
 
   addToStage() {
     this.configureGraphic();
     this.setupInteractivity();
 
-    if (!this.graphic) {
+    if (!this.container) {
       // This shouldn't happen, but in case configureGraphic fails
       throw new Error(
         "You must initialize the graphic object before adding it to the stage (call configureGraphic)"
       );
     } else {
-      this.appReference.stage.addChild(this.graphic);
+      this.appReference.stage.addChild(this.container);
     }
   }
   // Configure the appearance of the drawable component of the record
@@ -142,25 +137,55 @@ abstract class RecordActor implements Actor {
 }
 
 export class AccountActor extends RecordActor {
+  // private glowFilter: PixiJs.ColorMatrixFilter;
+  private sinMod: number;
+
   // The super call is unnecessary- if the constructor is absent, parent constructor is called by defualt
   constructor(appReference: PixiJs.Application, recordData: any) {
     super(appReference, recordData);
+
+    this.sinMod = Math.random() * 10;
   }
 
   configureGraphic() {
-    // Would be nice to define all the properties in an object instead of inline
-    // maybe oughta stop throwing around non-null assertions willy nilly
-    this.graphic!.ellipse(this.graphic!.x, this.graphic!.y, 20, 20);
-    this.graphic!.fill(0x55d6f5);
+    const ellipse = new PixiJs.Graphics();
+    ellipse.ellipse(this.container!.x, this.container!.y, 20, 20);
+    ellipse.beginFill(0x55d6f5);
+    ellipse.endFill();
+    this.container!.addChild(ellipse);
+
+    const gradient = new PixiJs.Graphics();
+    gradient.beginFill(0xabfbf6, 0.4);
+    gradient.drawCircle(2, -4, 12.0);
+    gradient.endFill();
+    this.container?.addChild(gradient);
+
+    // Looks bad, won't use
+    // this.glowFilter = new PixiJs.ColorMatrixFilter();
+    // this.glowFilter.brightness(1.2, false);
+
+    // this.container!.filters = [this.glowFilter];
 
     this.hitAreaOffset = 15;
     this.hitAreaRadius = 30;
 
-    this.graphic!.pivot.x = 10;
-    this.graphic!.pivot.y = 10;
+    this.container!.pivot.x = 10;
+    this.container!.pivot.y = 10;
   }
 
   update() {
+    // This is the same code as ContactActor
+    // Should be refactored out to a "behavioral component" common to both classes
+    this.sinMod += 0.02;
+    if (this.sinMod > Math.PI * 2) {
+      this.sinMod = 0;
+    }
+    const bobAmount = 0.04;
+    const swayAmount = 0.01;
+    this.container!.position.y =
+      this.container!.position.y + Math.sin(this.sinMod) * bobAmount;
+    this.container!.position.x +=
+      Math.cos(this.sinMod * 0.7) * 0.2 * swayAmount;
     return;
   }
 }
@@ -175,15 +200,17 @@ export class ContactActor extends RecordActor {
     super(appReference, recordData);
 
     this.sinMod = Math.random() * 10; // Randomize starting value so that animations are not synchronized between actors of same type
-
   }
 
   configureGraphic() {
+    const graphic = new PixiJs.Graphics();
 
-    this.graphic!.fill(0x6bf334);
-    this.graphic!.stroke({width: 2, color:0x4da828});
-    this.graphic!.roundRect(0, 0, 24, 24, 3.2);
-    this.graphic!.endFill();
+    graphic!.fill(0x6bf334);
+    graphic!.stroke({ width: 2, color: 0x4da828 });
+    graphic!.roundRect(0, 0, 24, 24, 3.2);
+    graphic!.endFill();
+
+    this.container!.addChild(graphic);
 
     // gradient effect
     const gradientGraphic = new PixiJs.Sprite(PixiJs.Texture.WHITE);
@@ -200,38 +227,38 @@ export class ContactActor extends RecordActor {
     gradientMask.endFill();
 
     gradientGraphic.mask = gradientMask;
-    this.graphic!.addChild(gradientMask);
+    this.container!.addChild(gradientMask);
 
     gradientGraphic.height = 12; // cover top half
 
     // glow fx
-    const blurFilter = new PixiJs.BlurFilter({strength: 0.2, quality: 1});
+    const blurFilter = new PixiJs.BlurFilter({ strength: 0.2, quality: 1 });
     this.glowFilter = new PixiJs.ColorMatrixFilter();
     this.glowFilter.brightness(1.2, false);
 
-    this.graphic!.filters = [blurFilter, this.glowFilter];
-    this.graphic!.addChild(gradientGraphic);
+    graphic.filters = [blurFilter, this.glowFilter];
+    this.container!.addChild(gradientGraphic);
 
-    this.graphic!.pivot.x = 12;
-    this.graphic!.pivot.y = 12;
+    this.container!.pivot.x = 12;
+    this.container!.pivot.y = 12;
 
     // rotation
-    this.graphic!.angle = Math.random() * 10 - 5;
+    this.container!.angle = Math.random() * 10 - 5;
     this.hitAreaOffset = 0;
     this.hitAreaRadius = 32;
 
     // mouse events
-    this.graphic!.eventMode = "static"; // enables mouse events
+    this.container!.eventMode = "static"; // enables mouse events
 
-    this.graphic!.on("pointerover", () => {
-      this.graphic!.scale.set(1.15, 1.15);
+    this.container!.on("pointerover", () => {
+      this.container!.scale.set(1.15, 1.15);
       if (this.glowFilter) {
         this.glowFilter.brightness(1.5, false);
       }
     });
 
-    this.graphic!.on("pointerout", () => {
-      this.graphic!.scale.set(1, 1);
+    this.container!.on("pointerout", () => {
+      this.container!.scale.set(1, 1);
       if (this.glowFilter) {
         this.glowFilter.brightness(1.2, false);
       }
@@ -246,9 +273,10 @@ export class ContactActor extends RecordActor {
     }
     const bobAmount = 0.02;
     const swayAmount = 0.01;
-    this.graphic!.position.y =
-      this.graphic!.position.y + Math.sin(this.sinMod) * bobAmount;
-    this.graphic!.position.x += Math.cos(this.sinMod * 0.7) * 0.2 * swayAmount;
+    this.container!.position.y =
+      this.container!.position.y + Math.sin(this.sinMod) * bobAmount;
+    this.container!.position.x +=
+      Math.cos(this.sinMod * 0.7) * 0.2 * swayAmount;
 
     // glow fx
     if (this.glowFilter) {
@@ -264,7 +292,8 @@ export class ContactActor extends RecordActor {
       const baseBrightness = 1.1;
       const pulseAmount = 0.5;
       this.glowFilter.brightness(
-        baseBrightness + this.pulseValue * pulseAmount, false
+        baseBrightness + this.pulseValue * pulseAmount,
+        false
       );
     }
   }

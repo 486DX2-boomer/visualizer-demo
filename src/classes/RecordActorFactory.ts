@@ -146,7 +146,7 @@ export class RecordActorFactory {
     for (let i = 0; i < count; i++) {
       const actor = new ActorType(this.app, records[i]);
       this.actors.addActor(actor as any);
-      (actor as any).graphic.position.set(coords[i].x, coords[i].y);
+      (actor as any).container.position.set(coords[i].x, coords[i].y);
     }
   }
 
