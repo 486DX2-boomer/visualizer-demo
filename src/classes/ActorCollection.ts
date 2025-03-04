@@ -4,7 +4,7 @@
 import { Actor } from "./Actor";
 import * as PixiJs from "pixi.js";
 
-export class ActorCollection {
+export class ActorCollection implements Iterable<Actor> {
   actors: Actor[] = [];
   appReference: PixiJs.Application;
 
@@ -25,5 +25,9 @@ export class ActorCollection {
     for (let a of this.actors) {
       a.update();
     }
+  }
+
+  [Symbol.iterator](): Iterator<Actor> {
+    return this.actors[Symbol.iterator]();
   }
 }
