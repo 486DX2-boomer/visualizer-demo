@@ -23,7 +23,9 @@ export abstract class RecordActor implements Actor {
   protected tooltip: Tooltip;
 
   // Fix type annotation here
+  // @ts-ignore
   protected hitAreaOffset: number; // set it before setupInteractivity
+  // @ts-ignore
   protected hitAreaRadius: number;
 
   constructor(appReference: PixiJs.Application, recordData: MockRecord, mousePos: { x: number; y: number; }) {

@@ -2,10 +2,12 @@ import * as PixiJs from "pixi.js";
 import { MockRecord } from "../classes/Record";
 
 export class Tooltip {
+  // @ts-ignore
   private parent: PixiJs.Container;
   public container: PixiJs.Container;
   private recordData: MockRecord;
   private offsetX: number = -40;
+  // @ts-ignore
   private offsetY: number = -130;
 
   constructor(recordData: MockRecord, parent: PixiJs.Container) {

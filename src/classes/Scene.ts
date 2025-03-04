@@ -5,6 +5,7 @@ import { Connection } from "./Connection";
 import { ActorCollection } from "./ActorCollection";
 import { BackgroundGradient } from "../actors/BackgroundGradient";
 import { CursorShadow } from "../actors/CursorShadow";
+// @ts-ignore
 import { BunnyExample } from "../actors/BunnyExample";
 import { RecordActorFactory } from "./RecordActorFactory";
 

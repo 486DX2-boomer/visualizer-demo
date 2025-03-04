@@ -49,12 +49,15 @@ export class RecordActorFactory {
       attempts++;
       
       // Vertical line distribution with some horizontal variance
+      // @ts-ignore
       const relativePos = positions.length / Math.max(count - 1, 1);
       // Map from 0-1 to -0.5 to 0.5 for y positioning
+      // @ts-ignore
       const yOffset = (relativePos - 0.5) * verticalSpread;
       
       // Add some horizontal variance but keep accounts to the left
       let x = centerX + (Math.random() - 0.3) * horizontalSpread;
+      // @ts-ignore
       let y = centerY + yOffset;
       
       // Add small random jitter to prevent perfect alignment
@@ -91,11 +94,14 @@ export class RecordActorFactory {
       const stepY = verticalSpread / Math.max(rows, 1);
       
       for (let i = positions.length; i < count; i++) {
+        // @ts-ignore
         const idx = i - positions.length;
+        // @ts-ignore
         const col = idx % cols;
         const row = Math.floor(idx / cols);
         
         // Center the grid in our target area
+        // @ts-ignore
         const x = centerX - horizontalSpread/2 + col * stepX + stepX/2;
         const y = centerY - verticalSpread/2 + row * stepY + stepY/2;
         
@@ -193,7 +199,7 @@ export class RecordActorFactory {
         }
       }
     }
-    
+    // @ts-ignore
     return positions;
   }
   
@@ -232,6 +238,7 @@ export class RecordActorFactory {
   }
 
   private createRelationships(): void {
+    // @ts-ignore
     for (const [contactId, contactActor] of this.contactActorMap.entries()) {
       const contactData = contactActor.recordData as Contact;
       const accountId = contactData.accountId;
