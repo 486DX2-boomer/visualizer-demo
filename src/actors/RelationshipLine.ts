@@ -36,9 +36,8 @@ export class RelationshipLine implements Actor {
     this.container.eventMode = "none";
 
     this.line = new PixiJs.Graphics();
-    this.line.moveTo(this.beginX, this.beginY).lineTo(this.endX, this.endY);
-    this.line.stroke({ color: 0xffffff, width: 1 });
-
+    // this.line.moveTo(this.beginX, this.beginY).lineTo(this.endX, this.endY);
+    // this.line.stroke({ color: 0xffffff, width: 2, alpha: 0.5 });
     this.container.addChild(this.line);
   }
 
@@ -54,6 +53,6 @@ export class RelationshipLine implements Actor {
 
     this.line.clear();
     this.line.moveTo(this.beginX, this.beginY).lineTo(this.endX, this.endY);
-    this.line.stroke({ color: 0xffffff, width: 1 });
+    this.line.stroke({ color: 0xffffff, width: 2, alpha: 0.5 });
   }
 }
