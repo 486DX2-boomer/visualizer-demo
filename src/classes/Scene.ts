@@ -39,10 +39,13 @@ export class Scene {
     actors.addActor(new CursorShadow(this.appReference, mousePosition));
     
     // Spinning bunny example
-    let bunnyExample = new BunnyExample(this.appReference);
+    // let bunnyExample = new BunnyExample(this.appReference);
+
     // bunnyExample loads a sprite, which is async. Because of that, we can't add it to actors straight away.
-    await bunnyExample.init(); // Comment out this line to see graceful error handling.
-    actors.addActor(bunnyExample);
+    
+    // await bunnyExample.init(); // Comment out this line to see graceful error handling.
+
+    // actors.addActor(bunnyExample);
 
     // Fetch records from the mock endpoint
     const connection = new Connection();
