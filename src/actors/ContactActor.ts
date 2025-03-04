@@ -56,7 +56,8 @@ export class ContactActor extends RecordActor {
     this.container!.pivot.y = 12;
 
     // rotation
-    this.container!.angle = Math.random() * 10 - 5;
+    // this.container!.angle = Math.random() * 10 - 5;
+    
     this.hitAreaOffset = 0;
     this.hitAreaRadius = 32;
 
