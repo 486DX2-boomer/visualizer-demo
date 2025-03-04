@@ -12,6 +12,11 @@ import { CursorShadow } from "../actors/CursorShadow";
 import { BunnyExample } from "../actors/BunnyExample";
 
 import { RecordActorFactory } from "./RecordActorFactory";
+import { RelationshipLine } from "../actors/RelationshipLine";
+import { RecordActor } from "../actors/RecordActor";
+import { ContactActor } from "../actors/ContactActor";
+import { AccountActor } from "../actors/AccountActor";
+import { Contact } from "./Record";
 
 export class Scene {
   protected appReference: PixiJs.Application;
@@ -68,8 +73,41 @@ export class Scene {
     // createRecordActors(this.appReference, r, actors);
     // changed to use factory obj
 
-    const factory = new RecordActorFactory(this.appReference, actors, 50, mousePosition);
+    const factory = new RecordActorFactory(
+      this.appReference,
+      actors,
+      50,
+      mousePosition
+    );
     factory.createRecordActors(r);
+
+    for (const a of actors) {
+      if (a instanceof RecordActor) {
+        // are two checks necessary?
+        if (a instanceof ContactActor) {
+          // find all related accounts
+          const contact: ContactActor = a;
+          const contactData = a.recordData as Contact;
+          for (const account of actors) {
+            if (account instanceof AccountActor) {
+              if (
+                (account as AccountActor).recordData.Id ===
+                contactData.accountId
+              ) {
+                // create a line
+                const line = new RelationshipLine(
+                  this.appReference,
+                  contact,
+                  account
+                );
+                actors.addActor(line);
+              }
+            }
+          }
+        }
+      }
+    };
+    
   }
 }
 
