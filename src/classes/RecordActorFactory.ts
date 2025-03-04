@@ -1,6 +1,7 @@
 import { ActorCollection } from "./ActorCollection";
-import { AccountActor, ContactActor } from "./Record";
+import { ContactActor } from "../actors/ContactActor";
 import * as PixiJs from "pixi.js";
+import { AccountActor } from "../actors/AccountActor";
 
 export class RecordActorFactory {
   private app: PixiJs.Application;

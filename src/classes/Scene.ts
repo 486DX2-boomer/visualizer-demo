@@ -11,8 +11,6 @@ import { BackgroundGradient } from "../actors/BackgroundGradient";
 import { CursorShadow } from "../actors/CursorShadow";
 import { BunnyExample } from "../actors/BunnyExample";
 
-import { ContactActor, AccountActor, MockRecord } from "./Record";
-
 import { RecordActorFactory } from "./RecordActorFactory";
 
 export class Scene {
