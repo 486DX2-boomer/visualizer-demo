@@ -146,7 +146,7 @@ export class RecordActorFactory {
       // Position contacts to the right of their accounts in a column
       if (contactCount > 0) {
         // right-side positioning with more horizontal spread
-        const baseX = Math.max(accountPos.x + 360, this.screenWidth * 0.6);
+        const baseX = Math.max(accountPos.x + 120, this.screenWidth * 0.6);
         
         for (let i = 0; i < contactCount; i++) {
           const contact = accountContacts[i];
@@ -162,7 +162,7 @@ export class RecordActorFactory {
             attempts++;
             
             // Position contacts to the right
-            x = baseX + (Math.random() * 80);
+            x = baseX + (Math.random() * 160);
             y = accountPos.y + yOffset + (Math.random() - 0.5) * 40;
             
             // Keep in bounds
