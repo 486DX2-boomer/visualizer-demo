@@ -37,12 +37,12 @@ export class Scene {
     actors.addActor(new BackgroundGradient(this.appReference));
     // Cursor shadow effect
     actors.addActor(new CursorShadow(this.appReference, mousePosition));
-    
+
     // Spinning bunny example
     // let bunnyExample = new BunnyExample(this.appReference);
 
     // bunnyExample loads a sprite, which is async. Because of that, we can't add it to actors straight away.
-    
+
     // await bunnyExample.init(); // Comment out this line to see graceful error handling.
 
     // actors.addActor(bunnyExample);
@@ -51,7 +51,7 @@ export class Scene {
     const connection = new Connection();
     const records = await connection.fetchRecords();
     console.log(`Records received in Scene: ${records.length}`);
-    
+
     // Initialize the factory and create actors
     const factory = new RecordActorFactory(
       this.appReference,
@@ -59,8 +59,24 @@ export class Scene {
       50,
       mousePosition
     );
-    
+
     // Create all record actors and their relationships
     factory.createRecordActors(records);
+
+    const demoText = `this demo visualizes CRM records retrieved from a mock endpoint 
+    and draws lines to represent their relationships
+    this demo covers:
+    Types: interfaces, abstract classes, discriminated unions, generics
+Safety: schema validation, null checks, type guards
+Async: promises, async/await, error handling
+External library integration: PixiJS, Zod with type definitions
+Events: pointer events, click and drag
+Architecture: component-based
+Practices: explicit types, access control, error handling, immutability`;
+
+    const demoTextStyle = new PixiJs.TextStyle({fontSize: 12, fill: 0xffffff, align: 'center'});
+    const demoTextGraphic = new PixiJs.Text({ text: demoText, style: demoTextStyle});
+    demoTextGraphic.position = {x: 0, y: this.appReference.canvas.height - demoTextGraphic.height - 24}
+    this.appReference.stage.addChild(demoTextGraphic);
   }
 }
