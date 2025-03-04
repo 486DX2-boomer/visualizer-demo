@@ -6,6 +6,7 @@
 
 import * as PixiJs from "pixi.js";
 import { Actor } from "./Actor";
+import { Tooltip } from "../actors/Tooltip";
 
 export interface MockRecord {
   Id: string;
@@ -66,6 +67,8 @@ abstract class RecordActor implements Actor {
   protected isDragging: boolean = false;
   protected globalMousePositionRef: { x: number; y: number };
 
+  protected tooltip: Tooltip;
+
   // Fix type annotation here
   protected hitAreaOffset: number; // set it before setupInteractivity
   protected hitAreaRadius: number;
@@ -80,6 +83,12 @@ abstract class RecordActor implements Actor {
     // this.recordData = { ...recordData };
 
     this.globalMousePositionRef = mousePos;
+
+    // add the box that displays record data on hover
+
+    this.tooltip = new Tooltip(this.recordData, this.container)
+    this.container.addChild(this.tooltip!.container);
+
   }
 
   protected setupInteractivity(): void {
@@ -109,11 +118,14 @@ abstract class RecordActor implements Actor {
   protected onPointerOver(): void {
     console.log(`Mouse over record: ${this.recordData.Id}`);
     this.container!.scale = 1.2;
+    // toggle tooltip
+    this.tooltip.container.visible = !this.tooltip.container.visible;
   }
-
+  
   protected onPointerOut(): void {
     // Reset appearance
     this.container!.scale = 1.0;
+    this.tooltip.container.visible = !this.tooltip.container.visible;
   }
 
   protected onPointerDown(): void {
@@ -132,7 +144,7 @@ abstract class RecordActor implements Actor {
   protected drag(): void {
     if (this.isDragging) {
       this.container!.x = this.globalMousePositionRef.x;
-      this.container!.y = this.globalMousePositionRef.y;
+      this.container!.y = this.globalMousePositionRef.y; // Should define offsets here so graphic doesn't "jump"
     }
   }
 
