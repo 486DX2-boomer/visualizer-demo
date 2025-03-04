@@ -2,6 +2,10 @@ import { ActorCollection } from "./ActorCollection";
 import { ContactActor } from "../actors/ContactActor";
 import * as PixiJs from "pixi.js";
 import { AccountActor } from "../actors/AccountActor";
+import { RelationshipLine } from "../actors/RelationshipLine";
+import { Contact } from "./Record";
+
+// Responsible for placing record actors into the scene
 
 export class RecordActorFactory {
   private app: PixiJs.Application;
@@ -11,6 +15,9 @@ export class RecordActorFactory {
   private padding: number = 50;
 
   private globalMousePositionRef: { x: number; y: number };
+  
+  private accountActorMap = new Map();
+  private contactActorMap = new Map();
 
   constructor(
     appReference: PixiJs.Application,
@@ -26,136 +33,214 @@ export class RecordActorFactory {
     this.globalMousePositionRef = mousePos;
   }
 
-  private generateCoordField(
-    corner: "bottomLeft" | "topRight",
-    count: number
-  ): Array<{ x: number; y: number }> {
-    const points: Array<{ x: number; y: number }> = [];
-    const minDist = 50; // Min spacing between points
-
-    const startX =
-      corner === "bottomLeft" ? this.padding : this.screenWidth - this.padding;
-    const startY =
-      corner === "bottomLeft" ? this.screenHeight - this.padding : this.padding;
-    points.push({
-      x: startX + (corner === "bottomLeft" ? 20 : -20),
-      y: startY + (corner === "bottomLeft" ? -20 : 20),
-    });
-
-    // Try to generate enough points, but abort if it takes too long
-    let tries = 0;
-    const maxTries = count * 3;
-
-    while (points.length < count && tries < maxTries) {
-      tries++;
-
-      // Pick a random existing point to branch from
-      const baseIndex = Math.floor(Math.random() * points.length);
-      const base = points[baseIndex];
-
-      // constraining the angles
-      // I don't understand this part, I don't understand pi
-      let minAngle, maxAngle;
-      if (corner === "bottomLeft") {
-        minAngle = -Math.PI * 0.75;
-        maxAngle = Math.PI * 0.25;
-      } else {
-        minAngle = Math.PI * 0.25;
-        maxAngle = Math.PI * 1.25;
-      }
-
-      const angle = minAngle + Math.random() * (maxAngle - minAngle);
-      const dist = 50 + Math.random() * 20 + tries / 10;
-
-      let x = base.x + Math.cos(angle) * dist;
-      let y = base.y + Math.sin(angle) * dist;
-
-      // constrain to screen bounds
-      x = Math.max(this.padding, Math.min(this.screenWidth - this.padding, x));
+  private createAccountPositions(count: number): Array<{ x: number; y: number }> {
+    const positions = [];
+    // Place accounts firmly in the left third of the screen
+    const centerX = this.screenWidth * 0.25;
+    const centerY = this.screenHeight * 0.5;
+    const verticalSpread = this.screenHeight * 0.7;
+    const horizontalSpread = this.screenWidth * 0.2;
+    const minDistance = 70;
+    
+    let attempts = 0;
+    const maxAttempts = count * 20;
+    
+    while (positions.length < count && attempts < maxAttempts) {
+      attempts++;
+      
+      // Vertical line distribution with some horizontal variance
+      const relativePos = positions.length / Math.max(count - 1, 1);
+      // Map from 0-1 to -0.5 to 0.5 for y positioning
+      const yOffset = (relativePos - 0.5) * verticalSpread;
+      
+      // Add some horizontal variance but keep accounts to the left
+      let x = centerX + (Math.random() - 0.3) * horizontalSpread;
+      let y = centerY + yOffset;
+      
+      // Add small random jitter to prevent perfect alignment
+      y += (Math.random() - 0.5) * 30;
+      
+      // Keep in bounds
+      x = Math.max(this.padding, Math.min(this.screenWidth * 0.4, x));
       y = Math.max(this.padding, Math.min(this.screenHeight - this.padding, y));
-
-      // prevent overlapping
+      
+      // Check for collisions
       let tooClose = false;
-      for (let i = 0; i < points.length; i++) {
-        const dx = points[i].x - x;
-        const dy = points[i].y - y;
-        const distSq = dx * dx + dy * dy;
-        if (distSq < minDist * minDist) {
+      for (const pos of positions) {
+        const dx = pos.x - x;
+        const dy = pos.y - y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < minDistance) {
           tooClose = true;
           break;
         }
       }
-
+      
       if (!tooClose) {
-        points.push({ x, y });
+        positions.push({ x, y });
       }
     }
-
-    // this is a fallback in case we somehow didn't get enough coords
-    if (points.length < count) {
-      const need = count - points.length;
-      points.push(...this.makeFillerCoords(corner, need));
+    
+    // Fall back to a grid if needed
+    if (positions.length < count) {
+      const rows = Math.ceil(Math.sqrt(count - positions.length));
+      const cols = Math.ceil((count - positions.length) / rows);
+      
+      const stepX = horizontalSpread / Math.max(cols, 1);
+      const stepY = verticalSpread / Math.max(rows, 1);
+      
+      for (let i = positions.length; i < count; i++) {
+        const idx = i - positions.length;
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        
+        // Center the grid in our target area
+        const x = centerX - horizontalSpread/2 + col * stepX + stepX/2;
+        const y = centerY - verticalSpread/2 + row * stepY + stepY/2;
+        
+        positions.push({ x, y });
+      }
     }
-
-    return points.slice(0, count);
+    
+    return positions;
   }
 
-  // fallback in case we somehow didn't get enough coordinates
-  private makeFillerCoords(
-    corner: "bottomLeft" | "topRight",
-    count: number
-  ): Array<{ x: number; y: number }> {
-    const points = [];
-
-    const centerX =
-      corner === "bottomLeft"
-        ? this.padding * 3
-        : this.screenWidth - this.padding * 3;
-    const centerY =
-      corner === "bottomLeft"
-        ? this.screenHeight - this.padding * 3
-        : this.padding * 3;
-
-    for (let i = 0; i < count; i++) {
-      const angle = 0.5 * i;
-      const radius = 10 * Math.sqrt(i);
-
-      // define direction
-      const xDir = corner === "bottomLeft" ? 1 : -1;
-      const yDir = corner === "bottomLeft" ? -1 : 1;
-
-      // math that I do not understand at all. I got a D in Algebra ok
-      let x = centerX + xDir * radius * Math.cos(angle);
-      let y = centerY + yDir * radius * Math.sin(angle);
-
-      x += Math.random() * 20 - 10;
-      y += Math.random() * 20 - 10;
-
-      // constrain to screen bounds
-      x = Math.max(this.padding, Math.min(this.screenWidth - this.padding, x));
-      y = Math.max(this.padding, Math.min(this.screenHeight - this.padding, y));
-
-      points.push({ x, y });
+  private createContactPositions(contacts: any[]): Array<{ x: number; y: number, contactId: string }> {
+    const positions = [];
+    const minDistance = 100;
+    
+    // Group contacts by their account ID
+    const contactsByAccount = new Map();
+    for (const contact of contacts) {
+      const accountId = contact.accountId;
+      if (!contactsByAccount.has(accountId)) {
+        contactsByAccount.set(accountId, []);
+      }
+      contactsByAccount.get(accountId).push(contact);
     }
-
-    return points;
+    
+    // Get account positions
+    const accountPositions = new Map();
+    for (const [id, accountActor] of this.accountActorMap.entries()) {
+      accountPositions.set(
+        id, 
+        { x: accountActor.container.position.x, y: accountActor.container.position.y }
+      );
+    }
+    
+    // Track existing positions for collision detection
+    const allPositions = Array.from(accountPositions.values());
+    
+    // Place contacts for each account
+    for (const [accountId, accountContacts] of contactsByAccount.entries()) {
+      if (!accountPositions.has(accountId)) {
+        // In a real scenario, we would need fallback logic for orphaned contacts
+        console.warn(`Contact has no related account: ${accountId}`);
+        continue;
+      }
+      
+      const accountPos = accountPositions.get(accountId);
+      const contactCount = accountContacts.length;
+      
+      // Position contacts to the right of their accounts in a column
+      if (contactCount > 0) {
+        // right-side positioning with more horizontal spread
+        const baseX = Math.max(accountPos.x + 360, this.screenWidth * 0.6);
+        
+        for (let i = 0; i < contactCount; i++) {
+          const contact = accountContacts[i];
+          
+          // Distribute evenly vertically
+          const yOffset = ((i - (contactCount-1)/2) / Math.max(contactCount, 1)) * 120;
+          
+          let placed = false;
+          let attempts = 0;
+          let x, y;
+          
+          while (!placed && attempts < 10) {
+            attempts++;
+            
+            // Position contacts to the right
+            x = baseX + (Math.random() * 80);
+            y = accountPos.y + yOffset + (Math.random() - 0.5) * 40;
+            
+            // Keep in bounds
+            x = Math.max(this.screenWidth * 0.5, Math.min(this.screenWidth - this.padding, x));
+            y = Math.max(this.padding, Math.min(this.screenHeight - this.padding, y));
+            
+            // Check for collisions
+            let tooClose = false;
+            for (const pos of allPositions) {
+              const dx = pos.x - x;
+              const dy = pos.y - y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              
+              if (distance < minDistance) {
+                tooClose = true;
+                break;
+              }
+            }
+            
+            if (!tooClose) {
+              placed = true;
+            }
+          }
+          
+          const position = { x, y, contactId: contact.Id };
+          positions.push(position);
+          allPositions.push({ x, y });
+        }
+      }
+    }
+    
+    return positions;
   }
+  
+  // In a real implementation, we would need a method to handle orphaned records
 
-  private createActors<T>(
-    ActorType: new (
-      app: PixiJs.Application,
-      data: any,
-      mousePos: {x: number, y: number}
-    ) => T,
-    records: any[],
-    coords: Array<{ x: number; y: number }>,
-  ): void {
-    const count = Math.min(records.length, coords.length);
-
-    for (let i = 0; i < count; i++) {
-      const actor = new ActorType(this.app, records[i], this.globalMousePositionRef);
+  private createAccountActors(accounts: any[]): void {
+    if (accounts.length === 0) return;
+    
+    const accountPositions = this.createAccountPositions(accounts.length);
+    
+    accounts.forEach((account, i) => {
+      const actor = new AccountActor(this.app, account, this.globalMousePositionRef);
       this.actors.addActor(actor as any);
-      (actor as any).container.position.set(coords[i].x, coords[i].y);
+      actor.container!.position.set(accountPositions[i].x, accountPositions[i].y);
+      
+      this.accountActorMap.set(account.Id, actor);
+    });
+  }
+
+  private createContactActors(contacts: any[]): void {
+    if (contacts.length === 0) return;
+    
+    const contactPositions = this.createContactPositions(contacts);
+    
+    contacts.forEach((contact) => {
+      const actor = new ContactActor(this.app, contact, this.globalMousePositionRef);
+      this.actors.addActor(actor as any);
+      
+      const position = contactPositions.find(pos => pos.contactId === contact.Id);
+      if (position) {
+        actor.container!.position.set(position.x, position.y);
+      }
+      
+      this.contactActorMap.set(contact.Id, actor);
+    });
+  }
+
+  private createRelationships(): void {
+    for (const [contactId, contactActor] of this.contactActorMap.entries()) {
+      const contactData = contactActor.recordData as Contact;
+      const accountId = contactData.accountId;
+      
+      if (this.accountActorMap.has(accountId)) {
+        const accountActor = this.accountActorMap.get(accountId);
+        const line = new RelationshipLine(this.app, contactActor, accountActor);
+        this.actors.addActor(line);
+      }
     }
   }
 
@@ -166,26 +251,21 @@ export class RecordActorFactory {
     }
 
     // Split records by type
-    // Still haven't made this generic enough... should be able to handle any record type
     const accounts = [];
     const contacts = [];
 
-    for (let i = 0; i < response.length; i++) {
-      const r = response[i];
-      if (r.type === "Account") {
-        accounts.push(r);
-      } else if (r.type === "Contact") {
-        contacts.push(r);
+    for (const record of response) {
+      if (record.type === "Account") {
+        accounts.push(record);
+      } else if (record.type === "Contact") {
+        contacts.push(record);
       }
     }
 
-    const accountCoords = this.generateCoordField(
-      "bottomLeft",
-      accounts.length
-    );
-    const contactCoords = this.generateCoordField("topRight", contacts.length);
-
-    this.createActors(AccountActor, accounts, accountCoords);
-    this.createActors(ContactActor, contacts, contactCoords);
+    this.createAccountActors(accounts);
+    this.createContactActors(contacts);
+    this.createRelationships();
+    
+    console.log(`Created ${accounts.length} accounts, ${contacts.length} contacts`);
   }
 }
