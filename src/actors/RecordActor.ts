@@ -15,7 +15,7 @@ import { MockRecord } from "../classes/Record";
 export abstract class RecordActor implements Actor {
   appReference: PixiJs.Application;
   container: PixiJs.Container | undefined;
-  protected recordData: MockRecord;
+  recordData: MockRecord;
 
   protected isDragging: boolean = false;
   protected globalMousePositionRef: { x: number; y: number; };
